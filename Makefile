@@ -23,7 +23,11 @@ TARGET_NAME := test
 
 include mk/VarConfirm.mk
 
+all : $(BIN_ROOT_DIR)/$(TARGET_NAME).bin
+	@echo $(TARGET_NAME).bin has been built!
+
 $(BIN_ROOT_DIR)/$(TARGET_NAME).bin: $(BUILD_DIR_OBJ)
+	@echo "Building executable: $@"
 	$(LD) $(LDFLAGS) -o $(BIN_ROOT_DIR)/$(TARGET_NAME).elf $^
 	$(OBJCOPY) -O binary -S $(BIN_ROOT_DIR)/$(TARGET_NAME).elf $@
 	$(OBJDUMP) -D -m arm $(BIN_ROOT_DIR)/$(TARGET_NAME).elf > $(BIN_ROOT_DIR)/$(TARGET_NAME).dis
@@ -32,14 +36,14 @@ $(BUILD_DIR_SOBJ) : obj/%.o : %.S
 	$(CC) $(CFLAGS) -nostdlib -c -o $@ $<
 
 $(BUILD_DIR_COBJ): obj/%.o : %.c
-	$(CC) $(CFLAGS) -Wa,-mimplicit-it=thumb -nostdlib -c -o $@ $<
+	$(CC) $(CFLAGS) -nostdlib -c -o $@ $<
 
 test:
 	@echo "===================================================="
 	@printf "%-20s" "VPATH:"
 	@echo $(VPATH)
-	@printf "%-20s" "CFILE_PATH:"
-	@echo $(CFILE_PATH)
+	@printf "%-20s" "PROJECT_ABS_ROOT_DIR:"
+	@echo $(PROJECT_ABS_ROOT_DIR)
 	@printf "%-20s" "DIR_COBJ:"
 	@echo $(DIR_COBJ)
 	@echo "===================================================="

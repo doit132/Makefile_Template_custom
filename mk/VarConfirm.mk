@@ -1,5 +1,9 @@
-# PROJECT_ROOT_DIR: 整个项目的根目录路径
+# PROJECT_ROOT_DIR: 整个项目的根目录路径, 是一个相对路径
+# PROJECT_ABS_ROOT_DIR: 整个项目的根目录路径, 是一个绝对路径
+# BUILD_ROOT_DIR: 编译输出文件 .o,.o.d 的根目录路径, 是相对于项目根目录而言的
+# BIN_ROOT_DIR: 可执行文件 .bin, .img, .elf 的根目录路径, 是相对于项目根目录而言的
 PROJECT_ROOT_DIR = .
+PROJECT_ABS_ROOT_DIR = $(CURDIR)
 BUILD_ROOT_DIR = obj
 BIN_ROOT_DIR = bin
 
@@ -14,7 +18,7 @@ else
 endif
 
 # ALL_INC_PATH: 整个项目中只要有头文件的文件夹, 将其路径加入到这个变量中
-# EXCLUDE_INC_PATH: 如果有头文件不想纳入搜索中, 将其所在文件夹路径加入到这个变量中, 以 ./ 开头, 结尾不带 /
+# EXCLUDE_INC_PATH: 如果有头文件不想纳入搜索中, 将其所在文件夹路径加入到这个变量中
 # INC_PATH: 从 ALL_INC_PATH 中过滤掉 EXCLUDE_INC_PATH 中的文件夹
 # 比如: \
 	ALL_INC_PATH = ./include ./include/xxx \
@@ -24,17 +28,17 @@ ALL_INC_PATH += $(shell find $(PROJECT_ROOT_DIR) -type f -name "*.h" -exec dirna
 EXCLUDE_INC_PATH +=
 INC_PATH += $(filter-out $(EXCLUDE_INC_PATH),$(ALL_INC_PATH))
 
-# *ALL_CFILE_PATH: 整个项目中所有 .C 文件所在的文件夹路径
+# *ALL_CFILE_PATH:     整个项目中所有 .C 文件所在的文件夹路径
 # *EXCLUDE_CFILE_PATH: 如果有整个文件夹的 .c 文件都不想纳入编译中, 将其所在文件夹路径加入到这个变量中
 # !注意: 不光会排除这个文件夹路径, 还会将这个文件夹的子文件夹也排除
 # *ONLY_INCLUDE_CFILE_PATH: 如果有整个文件夹的 .c 文件想纳入编译中, 将其所在文件夹路径加入到这个变量中
 # !注意: 只会将这个文件夹路径纳入 C 文件的搜索, 并不会将这个文件夹的子文件夹也纳入后续 C 文件的搜索
 # *CFILE_PATH: 从 ALL_CFILE_PATH 中过滤掉 EXCLUDE_CFILE_PATH 后剩下的文件夹路径
 # 比如: \
-	ALL_CFILE_PATH = ./src ./src/bsp/uart ./src/bsp/gpio \
-	EXCLUDE_CFILE_PATH = ./src/bsp \
+	ALL_CFILE_PATH          = ./src ./src/bsp/uart  \
+	EXCLUDE_CFILE_PATH      = ./src \
 	ONLY_INCLUDE_CFILE_PATH = ./src/bsp/uart \
-	CFILE_PATH = ./src ./src/bsp/uart
+	CFILE_PATH              = ./src/bsp/uart
 ALL_CFILE_PATH += $(shell find $(PROJECT_ROOT_DIR) -type f -name "*.c" -exec dirname {} \; | sort -u)
 EXCLUDE_CFILE_PATH +=
 ONLY_INCLUDE_CFILE_PATH +=
@@ -68,10 +72,10 @@ DIR_COBJ      += $(patsubst %, %, $(BUILD_CFILE:.c=.o))
 # !注意: 只会将这个文件夹路径纳入 .S 文件的搜索, 并不会将这个文件夹的子文件夹也纳入后续 .S 文件的搜索
 # *SFILE_PATH: 从 ALL_SFILE_PATH 中过滤掉 EXCLUDE_SFILE_PATH 后剩下的文件夹路径
 # 比如: \
-	ALL_SFILE_PATH = ./src ./src/bsp/uart ./src/bsp/gpio \
-	EXCLUDE_SFILE_PATH = ./src/bsp \
+	ALL_SFILE_PATH = ./src ./src/bsp/uart \
+	EXCLUDE_SFILE_PATH = ./src \
 	ONLY_INCLUDE_SFILE_PATH = ./src/bsp/uart \
-	SFILE_PATH = ./src ./src/bsp/uart
+	SFILE_PATH = ./src/bsp/uart
 ALL_SFILE_PATH += $(shell find $(PROJECT_ROOT_DIR) -type f -name "*.[sS]" -exec dirname {} \; | sort -u)
 EXCLUDE_SFILE_PATH +=
 ONLY_INCLUDE_SFILE_PATH +=
@@ -102,11 +106,11 @@ DIR_SOBJ      += $(patsubst %, %, $(BUILD_SFILE:.S=.o))
 # SOBJFILE: 取出 BUILD_SFILE 中的值, 剔除路径, 剔除文件名后缀, 增加 .o 文件名后缀
 # OBJFILE: 取出 COBJFILE 和 SOBJFILE 中的值放入这个变量
 # 比如: \
-	BUILD_CFILE := ./src/bsp/uart/uart.c ./src/main.c \
-	BUILD_SFILE := ./src/init.S \
+	BUILD_CFILE := ./src/uart/uart.c ./src/main.c \
+	BUILD_SFILE := ./src/start.S \
 	COBJFILE	:= uart.o main.o \
-	SOBJFILE    := init.o \
-	OBJFILE     := uart.o main.o init.o
+	SOBJFILE    := start.o \
+	OBJFILE     := uart.o main.o start.o
 TMP		 := $(notdir  $(BUILD_CFILE))
 COBJFILE += $(patsubst %, %, $(TMP:.c=.o))
 TMP		 := $(notdir  $(BUILD_SFILE))
