@@ -1,26 +1,112 @@
 # 声明的变量, 标准: 一个变量一个确定的含义
-include mk/Vars.mk
+include mk/VarDeclare.mk
 
-# EXCLUDE_INC_PATH: 如果有头文件不想纳入搜索中, 将其所在文件夹路径加入到这个变量中, 以 ./ 开头, 结尾不带 /
-# 比如: EXCLUDE_INC_PATH = ./include
+CROSS_COMPILE := arm-buildroot-linux-gnueabihf-
+CC       := $(CROSS_COMPILE)gcc
+LD       := $(CROSS_COMPILE)ld
+OBJCOPY  := $(CROSS_COMPILE)objcopy
+OBJDUMP  := $(CROSS_COMPILE)objdump
+
+CFLAGS  += -Wall -fno-builtin  -O2
+LDFLAGS  += -nostdlib
+
 EXCLUDE_INC_PATH +=
 
-# ONLY_INCLUDE_CFILE_PATH: 如果有整个文件夹的 .c 文件想纳入编译中, 将其所在文件夹路径加入到这个变量中 \
-  以 ./ 开头, 结尾不带 /
-# 注意: 只会将这个文件夹路径纳入 C 文件的搜索, 并不会将这个文件夹的子文件夹也纳入后续 C 文件的搜索
-# 比如: ONLY_INCLUDE_CFILE_PATH = ./src
-ONLY_INCLUDE_CFILE_PATH +=
+EXCLUDE_CFILE_PATH      +=
+ONLY_INCLUDE_CFILE_PATH += ./src/bsp/uart
+ONLY_INCLUDE_SFILE_PATH +=
 
-EXCLUDE_CFILE_PATH += ./src
+EXCLUDE_CFILE +=
+EXCLUDE_SFILE +=
 
-all:
-	@echo "ALL_CFILE_PATH: \t"$(ALL_CFILE_PATH)
-	@echo "EXCLUDE_CFILE_PATH: \t"$(EXCLUDE_CFILE_PATH)
-	@echo "ONLY_INCLUDE_CFILE_PATH: \t"$(ONLY_INCLUDE_CFILE_PATH)
-	@echo "CFILE_PATH: \t"$(CFILE_PATH)
-	@echo "BUILD_CFILE: \t"$(BUILD_CFILE)
+TARGET_NAME := test
 
+include mk/VarConfirm.mk
 
+$(BIN_ROOT_DIR)/$(TARGET_NAME).bin: $(BUILD_OBJ)
+	$(LD) $(LDFLAGS) -o $(BIN_ROOT_DIR)/$(TARGET_NAME).elf $^
+	$(OBJCOPY) -O binary -S $(BIN_ROOT_DIR)/$(TARGET_NAME).elf $@
+	$(OBJDUMP) -D -m arm $(BIN_ROOT_DIR)/$(TARGET_NAME).elf > $(BIN_ROOT_DIR)/$(TARGET_NAME).dis
+
+$(BUILD_SOBJ) : obj/%.o : %.S
+	$(CC) $(CFLAGS) -nostdlib -c -o $@ $<
+
+$(BUILD_COBJ): obj/%.o : %.c
+	$(CC) $(CFLAGS) -Wa,-mimplicit-it=thumb -nostdlib -c -o $@ $<
+
+# $(BUILD_ROOT_DIR)/%.o: $(BUILD_CFILE) $(BUILD_SFILE)
+# 	$(CC) $(CFLAGS) -o $@ $^
+
+test:
+	@echo "===================================================="
+	@printf "%-20s" "VPATH:"
+	@echo $(VPATH)
+	@echo "===================================================="
+
+info:
+	@echo "===================================================="
+	@printf "%-10s\n" "ALL_CFILE_PATH:"
+	@$(foreach var,$(ALL_CFILE_PATH),         printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "EXCLUDE_CFILE_PATH:"
+	@$(foreach var,$(EXCLUDE_CFILE_PATH),     printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "ONLY_INCLUDE_CFILE_PATH:"
+	@$(foreach var,$(ONLY_INCLUDE_CFILE_PATH),printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "CFILE_PATH:"
+	@$(foreach var,$(CFILE_PATH),             printf "\t%-20s\n" $(var);)
+	@echo "===================================================="
+	@echo
+	@echo "===================================================="
+	@printf "%-10s\n" "ALL_CFILE:"
+	@$(foreach var,$(ALL_CFILE),     	printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "EXCLUDE_CFILE:"
+	@$(foreach var,$(EXCLUDE_CFILE),    printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "BUILD_CFILE:"
+	@$(foreach var,$(BUILD_CFILE),      printf "\t%-20s\n" $(var);)
+	@echo "===================================================="
+	@echo
+	@echo "===================================================="
+	@printf "%-10s\n" "ALL_SFILE_PATH:"
+	@$(foreach var,$(ALL_SFILE_PATH),         printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "EXCLUDE_SFILE_PATH:"
+	@$(foreach var,$(EXCLUDE_SFILE_PATH),     printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "ONLY_INCLUDE_SFILE_PATH:"
+	@$(foreach var,$(ONLY_INCLUDE_SFILE_PATH),printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "SFILE_PATH:"
+	@$(foreach var,$(SFILE_PATH),             printf "\t%-20s\n" $(var);)
+	@echo "===================================================="
+	@echo
+	@echo "===================================================="
+	@printf "%-10s\n" "ALL_SFILE:"
+	@$(foreach var,$(ALL_SFILE),     	printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "EXCLUDE_SFILE:"
+	@$(foreach var,$(EXCLUDE_SFILE),    printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "BUILD_SFILE:"
+	@$(foreach var,$(BUILD_SFILE),      printf "\t%-20s\n" $(var);)
+	@echo "===================================================="
+	@echo
+	@echo "===================================================="
+	@printf "%-10s\n" "ALL_INC_PATH:"
+	@$(foreach var,$(ALL_INC_PATH),			printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "EXCLUDE_INC_PATH:"
+	@$(foreach var,$(EXCLUDE_INC_PATH),		printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "INC_PATH:"
+	@$(foreach var,$(INC_PATH),   			printf "\t%-20s\n" $(var);)
+	@echo "===================================================="
+	@echo
+	@echo "===================================================="
+	@printf "%-10s\n" "TMP:"
+	@$(foreach var,$(TMP),				printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "COBJFILE:"
+	@$(foreach var,$(COBJFILE),			printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "SOBJFILE:"
+	@$(foreach var,$(SOBJFILE),			printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "BUILD_COBJ:"
+	@$(foreach var,$(BUILD_COBJ),			printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "BUILD_SOBJ:"
+	@$(foreach var,$(BUILD_SOBJ),			printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "BUILD_OBJ:"
+	@$(foreach var,$(BUILD_OBJ),			printf "\t%-20s\n" $(var);)
+	@echo "===================================================="
 # FOLDERS := $(shell find $(ha) -type f -name "*.h" -exec dirname {} \; | sort -u)
 
 # 伪目标

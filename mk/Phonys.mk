@@ -69,5 +69,5 @@ printvars:
 .PHONY: time
 time:
 	echo "start test time"
-	@time make
+	@time make 
 # === 伪目标 End
