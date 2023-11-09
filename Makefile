@@ -23,24 +23,25 @@ TARGET_NAME := test
 
 include mk/VarConfirm.mk
 
-$(BIN_ROOT_DIR)/$(TARGET_NAME).bin: $(BUILD_OBJ)
+$(BIN_ROOT_DIR)/$(TARGET_NAME).bin: $(BUILD_DIR_OBJ)
 	$(LD) $(LDFLAGS) -o $(BIN_ROOT_DIR)/$(TARGET_NAME).elf $^
 	$(OBJCOPY) -O binary -S $(BIN_ROOT_DIR)/$(TARGET_NAME).elf $@
 	$(OBJDUMP) -D -m arm $(BIN_ROOT_DIR)/$(TARGET_NAME).elf > $(BIN_ROOT_DIR)/$(TARGET_NAME).dis
 
-$(BUILD_SOBJ) : obj/%.o : %.S
+$(BUILD_DIR_SOBJ) : obj/%.o : %.S
 	$(CC) $(CFLAGS) -nostdlib -c -o $@ $<
 
-$(BUILD_COBJ): obj/%.o : %.c
+$(BUILD_DIR_COBJ): obj/%.o : %.c
 	$(CC) $(CFLAGS) -Wa,-mimplicit-it=thumb -nostdlib -c -o $@ $<
-
-# $(BUILD_ROOT_DIR)/%.o: $(BUILD_CFILE) $(BUILD_SFILE)
-# 	$(CC) $(CFLAGS) -o $@ $^
 
 test:
 	@echo "===================================================="
 	@printf "%-20s" "VPATH:"
 	@echo $(VPATH)
+	@printf "%-20s" "CFILE_PATH:"
+	@echo $(CFILE_PATH)
+	@printf "%-20s" "DIR_COBJ:"
+	@echo $(DIR_COBJ)
 	@echo "===================================================="
 
 info:
@@ -100,12 +101,12 @@ info:
 	@$(foreach var,$(COBJFILE),			printf "\t%-20s\n" $(var);)
 	@printf "%-10s\n" "SOBJFILE:"
 	@$(foreach var,$(SOBJFILE),			printf "\t%-20s\n" $(var);)
-	@printf "%-10s\n" "BUILD_COBJ:"
-	@$(foreach var,$(BUILD_COBJ),			printf "\t%-20s\n" $(var);)
-	@printf "%-10s\n" "BUILD_SOBJ:"
-	@$(foreach var,$(BUILD_SOBJ),			printf "\t%-20s\n" $(var);)
-	@printf "%-10s\n" "BUILD_OBJ:"
-	@$(foreach var,$(BUILD_OBJ),			printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "BUILD_DIR_COBJ:"
+	@$(foreach var,$(BUILD_DIR_COBJ),			printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "BUILD_DIR_SOBJ:"
+	@$(foreach var,$(BUILD_DIR_SOBJ),			printf "\t%-20s\n" $(var);)
+	@printf "%-10s\n" "BUILD_DIR_OBJ:"
+	@$(foreach var,$(BUILD_DIR_OBJ),			printf "\t%-20s\n" $(var);)
 	@echo "===================================================="
 # FOLDERS := $(shell find $(ha) -type f -name "*.h" -exec dirname {} \; | sort -u)
 
